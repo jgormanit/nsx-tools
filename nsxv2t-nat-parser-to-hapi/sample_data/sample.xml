@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nat>
+    <version>64</version>
+    <enabled>true</enabled>
+    <natRules>
+        <natRule>
+            <ruleId>196611</ruleId>
+            <ruleTag>196611</ruleTag>
+            <loggingEnabled>false</loggingEnabled>
+            <enabled>true</enabled>
+            <translatedAddress>172.19.100.0/24</translatedAddress>
+            <ruleType>user</ruleType>
+            <action>snat</action>
+            <originalAddress>192.168.100.0/24</originalAddress>
+            <snatMatchDestinationAddress>any</snatMatchDestinationAddress>
+            <protocol>any</protocol>
+            <originalPort>any</originalPort>
+            <translatedPort>any</translatedPort>
+            <snatMatchDestinationPort>any</snatMatchDestinationPort>
+        </natRule>
+        <natRule>
+            <ruleId>196857</ruleId>
+            <ruleTag>196857</ruleTag>
+            <loggingEnabled>false</loggingEnabled>
+            <enabled>true</enabled>
+            <translatedAddress>192.168.100.251</translatedAddress>
+            <ruleType>user</ruleType>
+            <action>dnat</action>
+            <originalAddress>172.25.100.251</originalAddress>
+            <dnatMatchSourceAddress>any</dnatMatchSourceAddress>
+            <protocol>any</protocol>
+            <originalPort>any</originalPort>
+            <translatedPort>any</translatedPort>
+            <dnatMatchSourcePort>any</dnatMatchSourcePort>
+        </natRule>
+    </natRules>
+    <nat64Rules/>
+</nat>

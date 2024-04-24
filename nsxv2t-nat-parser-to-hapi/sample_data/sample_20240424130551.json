@@ -1,0 +1,63 @@
+{
+    "resource_type": "Infra",
+    "id": "infra",
+    "children": [
+        {
+            "Tier1": {
+                "resource_type": "Tier1",
+                "id": "predefined_id",
+                "children": [
+                    {
+                        "PolicyNat": {
+                            "resource_type": "PolicyNat",
+                            "id": "USER",
+                            "children": [
+                                {
+                                    "PolicyNatRule": {
+                                        "sequence_number": 196611,
+                                        "action": "SNAT",
+                                        "translated_network": "172.19.100.0/24",
+                                        "scope": [
+                                            "/infra/tier-1s/predefined_id"
+                                        ],
+                                        "enabled": true,
+                                        "logging": false,
+                                        "firewall_match": "MATCH_INTERNAL_ADDRESS",
+                                        "resource_type": "PolicyNatRule",
+                                        "id": "196611",
+                                        "display_name": "Nat Rule 196611",
+                                        "description": "Converted from NSX-v",
+                                        "source_network": "192.168.100.0/24"
+                                    },
+                                    "resource_type": "ChildPolicyNatRule"
+                                },
+                                {
+                                    "PolicyNatRule": {
+                                        "sequence_number": 196857,
+                                        "action": "DNAT",
+                                        "translated_network": "192.168.100.251",
+                                        "scope": [
+                                            "/infra/tier-1s/predefined_id"
+                                        ],
+                                        "enabled": true,
+                                        "logging": false,
+                                        "firewall_match": "MATCH_INTERNAL_ADDRESS",
+                                        "resource_type": "PolicyNatRule",
+                                        "id": "196857",
+                                        "display_name": "Nat Rule 196857",
+                                        "description": "Converted from NSX-v",
+                                        "destination_network": "172.25.100.251"
+                                    },
+                                    "resource_type": "ChildPolicyNatRule"
+                                }
+                            ]
+                        },
+                        "resource_type": "ChildPolicyNat",
+                        "marked_for_delete": false
+                    }
+                ]
+            },
+            "resource_type": "ChildTier1"
+        }
+    ]
+}

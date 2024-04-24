@@ -1,0 +1,5 @@
+2024-04-24 13:05:51,548 - INFO - XML file loaded successfully.
+2024-04-24 13:05:51,548 - INFO - Processed NAT Rule ID 196611: {'sequence_number': 196611, 'action': 'SNAT', 'translated_network': '172.19.100.0/24', 'scope': ['/infra/tier-1s/predefined_id'], 'enabled': True, 'logging': False, 'firewall_match': 'MATCH_INTERNAL_ADDRESS', 'resource_type': 'PolicyNatRule', 'id': '196611', 'display_name': 'Nat Rule 196611', 'description': 'Converted from NSX-v', 'source_network': '192.168.100.0/24'}
+2024-04-24 13:05:51,549 - INFO - Processed NAT Rule ID 196857: {'sequence_number': 196857, 'action': 'DNAT', 'translated_network': '192.168.100.251', 'scope': ['/infra/tier-1s/predefined_id'], 'enabled': True, 'logging': False, 'firewall_match': 'MATCH_INTERNAL_ADDRESS', 'resource_type': 'PolicyNatRule', 'id': '196857', 'display_name': 'Nat Rule 196857', 'description': 'Converted from NSX-v', 'destination_network': '172.25.100.251'}
+2024-04-24 13:05:51,554 - INFO - JSON conversion completed successfully. Saving to sample_20240424130551.json
+2024-04-24 13:05:51,554 - INFO - JSON data saved to sample_20240424130551.json

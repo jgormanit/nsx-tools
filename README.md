@@ -8,3 +8,5 @@ This repository contains a collection of scripts for various NSX (VMware NSX) ta
 `NSX-AppliedToDFW-Exporter/NSX-AppliedToDFW-Exporter.py` - This script exports all Distributed Firewall (DFW) rules from the NSX Manager where the "Applied To" field is set to "DFW".
 
 `dfw-rules-with-logging-exporter/dfw-rules-with-logging-exporter.py` - This script exports Distributed Firewall (DFW) rules from the NSX Manager that have logging enabled and saves them to a CSV file.
+
+`nsxv2t-nat-parser-to-hapi/nsxv2t-nat-parser-to-hapi.py` - This script converts NAT configurations from NSX-v XML format to NSX-T JSON format ready to be pushed to the NSX-T hierarchical API.
