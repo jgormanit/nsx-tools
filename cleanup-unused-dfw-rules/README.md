@@ -4,7 +4,7 @@
 The script was written to disable and delete distributed firewall rules. No responsibility is taken by the author for the results of its use in any environment.
 
 # <u>**BEFORE USING THE SCRIPT:**</u>
-- Take a backup of your NSX Manager AND Distributed Firewall config before using this script.
+Take a backup of your NSX Manager AND Distributed Firewall config before using this script.
 - Backup documentation: https://docs.vmware.com/en/VMware-NSX/4.1/administration/GUID-5D9C2F04-56B6-4B40-AF56-DA3046B552C6.html?hWord=N4IghgNiBcIEZgMYGsCuAHEBfIA
 - Export the Distributed Firewall config from the system to an accesible location: https://docs.vmware.com/en/VMware-NSX/4.1/administration/GUID-FCE6567E-1174-49CC-90F1-BA7B695B28F0.html
 
