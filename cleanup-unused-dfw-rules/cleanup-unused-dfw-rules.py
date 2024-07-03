@@ -16,6 +16,7 @@ NSX_PASSWORD = 'password'
 CSV_LOCATION = 'C:/User/localadmin/rule_data.csv'
 OUTPUT_DIR = 'C:/Users/localadmin/output/'
 LOG_FILE = os.path.join(OUTPUT_DIR, 'rule-change-log.txt')
+MAPPING_FILE = 'sp-object-policy-id-mp-id-mapping.json'
 
 # Default Firewall Type. Other Firewall types are not supported at this stage.
 FIREWALL_TYPE = 'Distributed Firewall'
@@ -63,8 +64,49 @@ def create_json_payload_for_patch(rule):
     }
     return payload
 
+# Function to create a mapping of policy IDs to MP IDs
+def create_policy_mp_mapping():
+    url = f'https://{NSX_MANAGER_FQDN}/policy/api/v1/search/query?query=resource_type:SecurityPolicy&included_fields=display_name,id,realization_id'
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    mapping = []
+    while url:
+        response = requests.get(url, headers=headers, auth=(NSX_USERNAME, NSX_PASSWORD), verify=False)
+        data = response.json()
+        mapping.extend(data.get('results', []))
+        cursor = data.get('cursor')
+        if cursor:
+            url = f'https://{NSX_MANAGER_FQDN}/policy/api/v1/search/query?query=resource_type:SecurityPolicy&included_fields=display_name,id,realization_id&cursor={cursor}'
+        else:
+            url = None
+    with open(MAPPING_FILE, 'w') as file:
+        json.dump(mapping, file, indent=4)
+    print(f"Policy to MP ID mapping saved to {MAPPING_FILE}")
+
+# Function to load the policy to MP ID mapping from the JSON file
+def load_policy_mp_mapping():
+    if not os.path.exists(MAPPING_FILE):
+        create_policy_mp_mapping()
+    with open(MAPPING_FILE, 'r') as file:
+        return json.load(file)
+
+# Function to log the payload to a log file
+def log_payload(method, section_id, rule_id, payload, url):
+    log_entry = f"{datetime.now()} - Method: {method}, URL: {url}, Section ID: {section_id}, Rule ID: {rule_id}, Payload: {json.dumps(payload) if payload else 'None'}\n"
+    with open(LOG_FILE, 'a') as log_file:
+        log_file.write(log_entry)
+
+# Function to print and simple user info
+def log_and_print_message(message, method=None, section_id=None, rule_id=None, payload=None, url=None):
+    print(message)
+    if method:
+        log_payload(method, section_id, rule_id, payload, url)
+
 # Function to collect data for each unique Section ID
 def collect_mode(target_section_id=None):
+    policy_mp_mapping = load_policy_mp_mapping()
+    mp_to_policy_id = {item['realization_id']: item['id'] for item in policy_mp_mapping}
     unique_section_ids = set()
     non_matching_sections = set()
     csv_sections = set()
@@ -81,33 +123,32 @@ def collect_mode(target_section_id=None):
             else:
                 non_matching_sections.add(row['Section ID'])
 
-    # Fetch and save data for each unique Section ID
-    for section_id in unique_section_ids:
-        section_info = get_section_info(section_id)
-        output_file = os.path.join(OUTPUT_DIR, f'section_{section_id}.json')
+    # Fetch and save data for each unique Section ID using the policy ID
+    for mp_id in unique_section_ids:
+        policy_id = mp_to_policy_id.get(mp_id)
+        if not policy_id:
+            log_and_print_message(f"Policy ID not found for MP ID {mp_id}")
+            continue
+        section_info = get_section_info(policy_id)
+        output_file = os.path.join(OUTPUT_DIR, f'section_{policy_id}.json')
         with open(output_file, 'w') as json_file:
             json.dump(section_info, json_file, indent=4)
-        print(f"Section ID {section_id} - Data saved to {output_file}")
+        log_and_print_message(f"Section ID {policy_id} - Data saved to {output_file}")
 
     # Log sections not collected because of NSX Manager or Firewall Type mismatch
     if non_matching_sections:
-        print("The following sections were not collected because their NSX Manager or Firewall Type did not match the specified criteria:")
+        log_and_print_message("The following sections were not collected because their NSX Manager or Firewall Type did not match the specified criteria:")
         for section_id in non_matching_sections:
-            print(f"Section ID {section_id}")
+            log_and_print_message(f"Section ID {section_id}")
 
     # Log sections not found in the CSV file
     if target_section_id and target_section_id not in csv_sections:
-        log_payload('NOT FOUND', target_section_id, None, None, 'Section ID not found in CSV')
-        print(f"Section ID {target_section_id} not found in CSV file")
-
-# Function to log the payload to a log file
-def log_payload(method, section_id, rule_id, payload, url):
-    with open(LOG_FILE, 'a') as log_file:
-        log_entry = f"{datetime.now()} - Method: {method}, URL: {url}, Section ID: {section_id}, Rule ID: {rule_id}, Payload: {json.dumps(payload) if payload else 'None'}\n"
-        log_file.write(log_entry)
+        log_and_print_message(f"Section ID {target_section_id} not found in CSV file", 'NOT FOUND', target_section_id)
 
 # Function to disable rules based on the CSV file
 def disable_mode(target_section_id=None, target_rule_id=None):
+    policy_mp_mapping = load_policy_mp_mapping()
+    mp_to_policy_id = {item['realization_id']: item['id'] for item in policy_mp_mapping}
     csv_sections = set()
     csv_rules = set()
 
@@ -126,15 +167,17 @@ def disable_mode(target_section_id=None, target_rule_id=None):
                     continue
                 
                 if row['Status'].lower() == 'disabled':
-                    print(f"Rule ID {rule_id} in section {section_id} is already disabled, skipping.")
-                    log_payload('SKIP', section_id, rule_id, None, 'Already disabled')
+                    log_and_print_message(f"Rule ID {rule_id} in section {section_id} is already disabled, skipping.", 'SKIP', section_id, rule_id)
                     continue
 
                 # Load the corresponding section JSON file
-                section_file = os.path.join(OUTPUT_DIR, f'section_{section_id}.json')
+                policy_id = mp_to_policy_id.get(section_id)
+                if not policy_id:
+                    log_and_print_message(f"Policy ID not found for MP ID {section_id}")
+                    continue
+                section_file = os.path.join(OUTPUT_DIR, f'section_{policy_id}.json')
                 if not os.path.exists(section_file):
-                    log_payload('NOT FOUND', section_id, rule_id, None, 'Section file not found')
-                    print(f"Section file for Section ID {section_id} not found")
+                    log_and_print_message(f"Section file for Section ID {policy_id} not found", 'NOT FOUND', policy_id, rule_id)
                     continue
 
                 with open(section_file, 'r') as json_file:
@@ -146,22 +189,22 @@ def disable_mode(target_section_id=None, target_rule_id=None):
                 if rule:
                     # Create the payload, log it, and send the PATCH request
                     payload = create_json_payload_for_patch(rule)
-                    response = send_patch_request(payload, section_id, rule["id"])
-                    print(f"Rule ID {rule_id} - Response: {response.status_code}")
+                    response = send_patch_request(payload, policy_id, rule["id"])
+                    log_and_print_message(f"Rule ID {rule_id} has been disabled.", 'PATCH', policy_id, rule_id, payload, 'PATCH request sent')
                 else:
-                    print(f"Rule ID {rule_id} not found in section {section_id}")
+                    log_and_print_message(f"Rule ID {rule_id} not found in section {policy_id}")
 
     # Log section or rule not found in the CSV file
     if target_section_id and target_section_id not in csv_sections:
-        log_payload('NOT FOUND', target_section_id, None, None, 'Section ID not found in CSV')
-        print(f"Section ID {target_section_id} not found in CSV file")
+        log_and_print_message(f"Section ID {target_section_id} not found in CSV file", 'NOT FOUND', target_section_id)
 
     if target_rule_id and (target_section_id, target_rule_id) not in csv_rules:
-        log_payload('NOT FOUND', target_section_id, target_rule_id, None, 'Rule ID not found in CSV')
-        print(f"Rule ID {target_rule_id} in section {target_section_id} not found in CSV file")
+        log_and_print_message(f"Rule ID {target_rule_id} in section {target_section_id} not found in CSV file", 'NOT FOUND', target_section_id, target_rule_id)
 
 # Function to delete rules based on the CSV file
 def delete_mode(target_section_id=None, target_rule_id=None):
+    policy_mp_mapping = load_policy_mp_mapping()
+    mp_to_policy_id = {item['realization_id']: item['id'] for item in policy_mp_mapping}
     csv_sections = set()
     csv_rules = set()
 
@@ -180,10 +223,13 @@ def delete_mode(target_section_id=None, target_rule_id=None):
                     continue
 
                 # Load the corresponding section JSON file
-                section_file = os.path.join(OUTPUT_DIR, f'section_{section_id}.json')
+                policy_id = mp_to_policy_id.get(section_id)
+                if not policy_id:
+                    log_and_print_message(f"Policy ID not found for MP ID {section_id}")
+                    continue
+                section_file = os.path.join(OUTPUT_DIR, f'section_{policy_id}.json')
                 if not os.path.exists(section_file):
-                    log_payload('NOT FOUND', section_id, rule_id, None, 'Section file not found')
-                    print(f"Section file for Section ID {section_id} not found")
+                    log_and_print_message(f"Section file for Section ID {policy_id} not found", 'NOT FOUND', policy_id, rule_id)
                     continue
 
                 with open(section_file, 'r') as json_file:
@@ -194,19 +240,17 @@ def delete_mode(target_section_id=None, target_rule_id=None):
 
                 if rule:
                     # Log it and send the DELETE request
-                    response = send_delete_request(section_id, rule["id"])
-                    print(f"Rule ID {rule_id} - Response: {response.status_code}")
+                    response = send_delete_request(policy_id, rule["id"])
+                    log_and_print_message(f"Rule ID {rule_id} has been deleted.", 'DELETE', policy_id, rule_id, None, 'DELETE request sent')
                 else:
-                    print(f"Rule ID {rule_id} not found in section {section_id}")
+                    log_and_print_message(f"Rule ID {rule_id} not found in section {policy_id}")
 
     # Log section or rule not found in the CSV file
     if target_section_id and target_section_id not in csv_sections:
-        log_payload('NOT FOUND', target_section_id, None, None, 'Section ID not found in CSV')
-        print(f"Section ID {target_section_id} not found in CSV file")
+        log_and_print_message(f"Section ID {target_section_id} not found in CSV file", 'NOT FOUND', target_section_id)
 
     if target_rule_id and (target_section_id, target_rule_id) not in csv_rules:
-        log_payload('NOT FOUND', target_section_id, target_rule_id, None, 'Rule ID not found in CSV')
-        print(f"Rule ID {target_rule_id} in section {target_section_id} not found in CSV file")
+        log_and_print_message(f"Rule ID {target_rule_id} in section {target_section_id} not found in CSV file", 'NOT FOUND', target_section_id, target_rule_id)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or sys.argv[1] not in ["collect", "disable", "delete"]:
