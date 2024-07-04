@@ -13,10 +13,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 NSX_MANAGER_FQDN = 'nsx01.lab.local'
 NSX_USERNAME = 'usernamehere'
 NSX_PASSWORD = 'password'
-CSV_LOCATION = 'C:/User/localadmin/rule_data.csv'
+CSV_LOCATION = 'C:/Users/localadmin/rule_data.csv'
 OUTPUT_DIR = 'C:/Users/localadmin/output/'
-LOG_FILE = os.path.join(OUTPUT_DIR, 'rule-change-log.txt')
-MAPPING_FILE = 'sp-object-policy-id-mp-id-mapping.json'
+LOG_FILE = os.path.join(OUTPUT_DIR, 'rule_change_log.txt')
+MAPPING_FILE = f'sp-object-policy-id-mp-id-mapping-{NSX_MANAGER_FQDN}.json'
 
 # Default Firewall Type. Other Firewall types are not supported at this stage.
 FIREWALL_TYPE = 'Distributed Firewall'
@@ -102,9 +102,14 @@ def log_and_print_message(message, method=None, section_id=None, rule_id=None, p
     print(message)
     if method:
         log_payload(method, section_id, rule_id, payload, url)
+    # Log to the file in any case
+    log_entry = f"{datetime.now()} - {message}\n"
+    with open(LOG_FILE, 'a') as log_file:
+        log_file.write(log_entry)
 
 # Function to collect data for each unique Section ID
 def collect_mode(target_section_id=None):
+    create_policy_mp_mapping()  # Recreate the mapping file
     policy_mp_mapping = load_policy_mp_mapping()
     mp_to_policy_id = {item['realization_id']: item['id'] for item in policy_mp_mapping}
     unique_section_ids = set()
@@ -156,6 +161,16 @@ def disable_mode(target_section_id=None, target_rule_id=None):
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             csv_sections.add(row['Section ID'])
+            # Skip rows with empty Rule ID and log additional information
+            if not row['Rule ID']:
+                message = (
+                    f"Skipping row with empty Rule ID.\n"
+                    f"Name: {row['Name']}\n"
+                    f"Section Name: {row['Section Name']}\n"
+                    f"Section ID: {row['Section ID']}"
+                )
+                log_and_print_message(message)
+                continue
             csv_rules.add((row['Section ID'], int(row['Rule ID'])))
             if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
                 section_id = row['Section ID']
@@ -165,7 +180,7 @@ def disable_mode(target_section_id=None, target_rule_id=None):
                     continue
                 if target_rule_id and rule_id != target_rule_id:
                     continue
-                
+
                 if row['Status'].lower() == 'disabled':
                     log_and_print_message(f"Rule ID {rule_id} in section {section_id} is already disabled, skipping.", 'SKIP', section_id, rule_id)
                     continue
@@ -184,7 +199,7 @@ def disable_mode(target_section_id=None, target_rule_id=None):
                     section_data = json.load(json_file)
 
                 # Find the rule in the section data
-                rule = next((r for r in section_data["rules"] if r["rule_id"] == rule_id), None)
+                rule = next((r for r in section_data.get("rules", []) if r["rule_id"] == rule_id), None)
 
                 if rule:
                     # Create the payload, log it, and send the PATCH request
@@ -212,6 +227,16 @@ def delete_mode(target_section_id=None, target_rule_id=None):
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             csv_sections.add(row['Section ID'])
+            # Skip rows with empty Rule ID and log additional information
+            if not row['Rule ID']:
+                message = (
+                    f"Skipping row with empty Rule ID.\n"
+                    f"Name: {row['Name']}\n"
+                    f"Section Name: {row['Section Name']}\n"
+                    f"Section ID: {row['Section ID']}"
+                )
+                log_and_print_message(message)
+                continue
             csv_rules.add((row['Section ID'], int(row['Rule ID'])))
             if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
                 section_id = row['Section ID']
@@ -236,7 +261,7 @@ def delete_mode(target_section_id=None, target_rule_id=None):
                     section_data = json.load(json_file)
 
                 # Find the rule in the section data
-                rule = next((r for r in section_data["rules"] if r["rule_id"] == rule_id), None)
+                rule = next((r for r in section_data.get("rules", []) if r["rule_id"] == rule_id), None)
 
                 if rule:
                     # Log it and send the DELETE request
