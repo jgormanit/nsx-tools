@@ -11,6 +11,8 @@ Take a backup of your NSX Manager AND Distributed Firewall config before using t
 ## Overview
 The `cleanup-unused-dfw-rules.py` script is designed to disable and/or delete Distributed Firewall rules. It has multiple modes of function and relies on CSV data as the source of truth for which rules should be disabled/deleted within the environment. This CSV data is generally exported from vRealize Network Insight (VRNI) as a dump of "Unused rules" or rules that do not have any rule hits in X period of time. Only rules that exist within this CSV can be disabled/deleted using this script.
 
+The `cleanedup-unused-dfw-rules-prompt-creds.py` version of this script prompts for the NSX username and NSX Password on each run. The original `cleanup-unused-dfw-rules.py` stores the credentials in the script.
+
 ## Features
 - **Section Data Collection**: Collects and saves firewall section data from NSX API to JSON files. This content contains ALL rules within each section. This is used to build the API Payload for disabling/deleting the rules listed in the CSV.
 - **Rule Disable**: Disables specific firewall rules based on the CSV data. Rules are disable using multiple API calls, regardless of if rules exist within the same section or across multiple sections.
@@ -68,12 +70,12 @@ python script.py disable
 
 **Specific section**:
 ```
-python script.py collect <section_id>
+python script.py disable <section_id>
 ```
 
 **Individual Rule within a Specific section**:
 ```
-python script.py collect <section_id> <rule_id>
+python script.py disable <section_id> <rule_id>
 ```
 ---
 #### Delete Mode
