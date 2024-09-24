@@ -7,7 +7,7 @@ The script was written to disable and delete distributed firewall rules. No resp
 Take a backup of your NSX Manager AND Distributed Firewall config before using this script.
 - Backup documentation: https://docs.vmware.com/en/VMware-NSX/4.1/administration/GUID-5D9C2F04-56B6-4B40-AF56-DA3046B552C6.html?hWord=N4IghgNiBcIEZgMYGsCuAHEBfIA
 - Export the Distributed Firewall config from the system to an accesible location: https://docs.vmware.com/en/VMware-NSX/4.1/administration/GUID-FCE6567E-1174-49CC-90F1-BA7B695B28F0.html
-- It is strongly recommend to only run collect mode once, if collect mode needs to be run again you should backup the all data from the output folder from the first collection for future reference.
+- It is **strongly recommended** to only run collect mode once. If collect mode **MUST** be run again you should backup ALL data in the output folder from the first collection to be used for future reference.
 
 ## Overview
 The `cleanup_unused_dfw_rules_1.0.py` script is designed to disable and/or delete Distributed Firewall rules. It has multiple modes of function and relies on CSV data as the source of truth for which rules should be disabled/deleted within the environment. This CSV data is generally exported from vRealize Network Insight (VRNI) as a dump of "Unused rules" or rules that do not have any rule hits in X period of time. Only rules that exist within this CSV can be disabled/deleted using this script.
