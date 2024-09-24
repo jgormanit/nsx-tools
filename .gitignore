@@ -1,1 +1,3 @@
 .DS_Store
+cleanup-unused-dfw-rules.py
+cleanup-unused-dfw-rules-prompt-creds.py

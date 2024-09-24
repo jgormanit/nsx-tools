@@ -6,6 +6,7 @@ import requests
 import urllib3
 from datetime import datetime
 import re
+import getpass
 
 # Suppress only the single InsecureRequestWarning from urllib3 needed for unverified HTTPS requests
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -14,13 +15,21 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 UUID_REGEX = re.compile(r'^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$')
 
 # Variables for NSX-T Manager connection and CSV file location
+prompt_for_creds = True  # If true, prompt for NSX credentials, otherwise use hardcoded credentials
 NSX_MANAGER_FQDN = 'nsx01.lab.local'
-NSX_USERNAME = 'usernamehere'
-NSX_PASSWORD = 'password'
 CSV_LOCATION = 'C:/Users/localadmin/rule_data.csv'
 OUTPUT_DIR = 'C:/Users/localadmin/output/'
 LOG_FILE = os.path.join(OUTPUT_DIR, 'rule_change_log.txt')
 MAPPING_FILE = f'sp-object-policy-id-mp-id-mapping-{NSX_MANAGER_FQDN}.json'
+
+# Handle credentials based on the prompt_for_creds variable
+if prompt_for_creds:
+    NSX_USERNAME = input("Enter NSX Username: ")
+    NSX_PASSWORD = getpass.getpass("Enter NSX Password: ")
+else:
+    NSX_USERNAME = 'usernamehere'  # Hardcoded default username if prompt_for_creds is False
+    NSX_PASSWORD = 'password'      # Hardcoded default password if prompt_for_creds is False
+
 
 # Default Firewall Type. Other Firewall types are not supported at this stage.
 FIREWALL_TYPE = 'Distributed Firewall'
