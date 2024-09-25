@@ -18,7 +18,7 @@ The `cleanup_unused_dfw_rules_1.0.py` script is designed to disable and/or delet
 - **Rule Disable**: Disables specific firewall rules based on the CSV data. Rules are disable using multiple API calls, regardless of if rules exist within the same section or across multiple sections.
 - **Rule Delete**: Deletes specific firewall rules based on the CSV data. Rules are deleted using multiple API calls, regardless of if rules exist within the same section or across multiple sections.
 - **Rule Restore**: Restores all rules for a specified section or all sections if no section ID is specified
-- **NSX Manager and Firewall Type Filtering**: Only rules from the NSX Manager specified in the `NSX_MANAGER_FQDN` variable can be disabled. The content of  the `NSX_MANAGER_FQDN` variable must match the `NSX Manager` field in the CSV data. Any rules that exist in an alternate NSX Manager will not be touched (even if they exist within the CSV). Only rules where type is equal to `Distributed Firewall` will be modified. Any others within the CSV will be ignored, even if they exist within the specified NSX Manager.
+- **NSX Manager and Firewall Type Filtering**: Only rules from the NSX Manager specified in the `NSX_MANAGER_FQDN` variable can be disabled. The content of  the `NSX_MANAGER_FQDN` variable must match the `Manager` field in the CSV data. Any rules that exist in an alternate NSX Manager will not be touched (even if they exist within the CSV). Only rules where type is equal to `Distributed Firewall` will be modified. Any others within the CSV will be ignored, even if they exist within the specified NSX Manager.
 - **Logging**: A log file named `rule-change-log.txt` is created in the `OUTPUT_DIR` directory. Logs information relating to the interaction with the NSX API, this includes Method, Section ID, Rule ID and Payload JSON.
 
 
@@ -44,7 +44,7 @@ If you wish to use hardcode credentials change the above variable in the script 
 The CSV file should have the following fields:
 
 ```
-Name,Destination Negate,Source Negate,Service Profile,Status,Section Name,Section ID,IP Protocol,ruleComment,associatedFwRules,Firewall Type,Direction,Scope,Rule ID,Action,Configured Destination,Configured Source,Sequence ID,Flow,NSX Manager,Configured Service,Manager
+Name,Destination Negate,Source Negate,Service Profile,Status,Section Name,Section ID,IP Protocol,ruleComment,associatedFwRules,Firewall Type,Direction,Scope,Rule ID,Action,Configured Destination,Configured Source,Sequence ID,Flow,Manager,Configured Service,Manager
 rule1,false,false,,Enabled,Policy_Default_Test1,Copy_of_Test-App1,IPv4 and IPv6,,rule1,Distributed Firewall,INOUT,,1001,ALLOW,,,10,,nsx01.example.com,,nsx.example.com
 rule2,false,false,,Enabled,Policy_Default_Test2,Test-App2,IPv4 and IPv6,,rule2,Edge Firewall,INOUT,,1002,ALLOW,,,20,,nsx01.example.com,,nsx.example.com
 ```
