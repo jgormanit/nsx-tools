@@ -150,7 +150,7 @@ def collect_mode(target_section_id=None):
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             csv_sections.add(row['Section ID'])
-            if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
+            if row['Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
                 if target_section_id and row['Section ID'] != target_section_id:
                     continue
                 unique_section_ids.add(row['Section ID'])
@@ -203,7 +203,7 @@ def disable_mode(target_section_id=None, target_rule_id=None):
                 log_and_print_message(message)
                 continue
             csv_rules.add((row['Section ID'], int(row['Rule ID'])))
-            if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
+            if row['Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
                 section_id = row['Section ID']
                 rule_id = int(row['Rule ID'])
 
@@ -271,7 +271,7 @@ def delete_mode(target_section_id=None, target_rule_id=None):
                 log_and_print_message(message)
                 continue
             csv_rules.add((row['Section ID'], int(row['Rule ID'])))
-            if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
+            if row['Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE:
                 section_id = row['Section ID']
                 rule_id = int(row['Rule ID'])
 
@@ -321,7 +321,7 @@ def restore_mode(target_section_id=None):
     if not target_section_id:
         with open(CSV_LOCATION, mode='r') as file:
             csv_reader = csv.DictReader(file)
-            sections_to_restore = {row['Section ID'] for row in csv_reader if row['NSX Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE}
+            sections_to_restore = {row['Section ID'] for row in csv_reader if row['Manager'] == NSX_MANAGER_FQDN and row['Firewall Type'] == FIREWALL_TYPE}
     else:
         sections_to_restore = {target_section_id}
     
