@@ -40,17 +40,24 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # Function to determine if the Section ID is an MP ID (UUID format) or a Policy ID
 def get_policy_id(section_id, mp_to_policy_id):
     """
-    Function to determine if the Section ID is a UUID (MP ID) or a direct Policy ID.
-    If it's an MP ID, do a lookup in the mapping file. Otherwise, return the Section ID directly.
+    Function to determine if the Section ID is an MP ID (UUID format) or a direct Policy ID.
+    It first checks if the Section ID matches a realization ID (MP ID) in the mapping.
+    If not, it checks if the Section ID is already a Policy ID.
     """
     if UUID_REGEX.match(section_id):
-        # Section ID is an MP ID, perform lookup in the mapping file
+        # First, try to look it up as a realization ID (MP ID)
         policy_id = mp_to_policy_id.get(section_id)
-        if not policy_id:
-            raise ValueError(f"Policy ID not found for MP ID {section_id}")
-        # Log successful lookup of the MP ID to Policy ID
-        log_and_print_message(f"Successfully found Policy ID {policy_id} for MP ID {section_id}", None)
-        return policy_id
+        if policy_id:
+            log_and_print_message(f"Successfully found Policy ID {policy_id} for realization ID {section_id}", None)
+            return policy_id
+        
+        # If not found as a realization ID, try to look it up as a Policy ID
+        if section_id in mp_to_policy_id.values():
+            log_and_print_message(f"Section ID {section_id} is already a Policy ID, no lookup needed.", None)
+            return section_id
+
+        # If both lookups fail, raise an error
+        raise ValueError(f"ID {section_id} not found as either realization ID or Policy ID")
     else:
         # Section ID is already a policy ID, no lookup needed
         return section_id
