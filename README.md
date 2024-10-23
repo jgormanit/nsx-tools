@@ -13,4 +13,4 @@ This repository contains a collection of scripts for various NSX (VMware NSX) ta
 
 `cleanup-unused-dfw-rules/cleanup-unused-dfw-rules.py` - This script collects, disables and deletes Distributed Firewall rules. Allowing you to cleanup large amounts of rules in batches.
 
-`identify_zero_hit_rules.py` - This script identifies all rules in a specific NSX Manager where the Rule Hit count is 0. It uses the statistics from the NSX Manager.
+`identify_zero_hit_dfw_rules.py` - This script identifies all rules in a specific NSX Manager where the Rule Hit count is 0. It uses the statistics from the NSX Manager.
