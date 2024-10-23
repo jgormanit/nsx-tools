@@ -10,7 +10,7 @@ Take a backup of your NSX Manager AND Distributed Firewall config before using t
 - It is **strongly recommended** to only run collect mode once. If collect mode **MUST** be run again you should backup ALL data in the output folder from the first collection to be used for future reference.
 
 ## Overview
-The `cleanup_unused_dfw_rules_1.0.py` script is designed to disable and/or delete Distributed Firewall rules. It has multiple modes of function and relies on CSV data as the source of truth for which rules should be disabled/deleted within the environment. This CSV data is generally exported from vRealize Network Insight (VRNI) as a dump of "Unused rules" or rules that do not have any rule hits in X period of time. Only rules that exist within this CSV can be disabled/deleted using this script.
+The `cleanup_unused_dfw_rules_1.1.py` script is designed to disable and/or delete Distributed Firewall rules. It has multiple modes of function and relies on CSV data as the source of truth for which rules should be disabled/deleted within the environment. This CSV data is generally exported from vRealize Network Insight (VRNI) as a dump of "Unused rules" or rules that do not have any rule hits in X period of time. Only rules that exist within this CSV can be disabled/deleted using this script.
 
 
 ## Features
@@ -28,7 +28,7 @@ The `cleanup_unused_dfw_rules_1.0.py` script is designed to disable and/or delet
 - Once the collect mode is done, confirm the data is populated in the JSON files and then you can run the disable or delete mode with appropriate arguments to limit the scope of the changes if you wish eg. disable <section-id> <rule-id>
 
 ### Variables
-Update the following variables in the `cleanup-unused-dfw-rules_1.0.py` script:
+Update the following variables in the `cleanup_unused_dfw_rules_1.1.py` script:
 - `NSX_MANAGER_FQDN`: The fully qualified domain name of the NSX Manager.
 - `CSV_LOCATION`: The path to the CSV file containing the firewall rules.
 - `OUTPUT_DIR`: The directory where output JSON and log files will be saved.
